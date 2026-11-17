@@ -65,6 +65,37 @@ func TestDesiredPodMonitorsWithPrometheus(t *testing.T) {
 	assert.Equal(t, expectedSelectorLabels, actual.Spec.Selector.MatchLabels)
 }
 
+func TestDesiredPodMonitorsWithExtraLabels(t *testing.T) {
+	params, err := newParams("", "testdata/prometheus-exporter.yaml", nil)
+	assert.NoError(t, err)
+	params.OtelCol.Spec.Mode = v1beta1.ModeSidecar
+	params.OtelCol.Spec.Observability.Metrics.EnableMetrics = true
+	params.OtelCol.Spec.Observability.Metrics.ExtraLabels = map[string]string{
+		"prometheus":    "kube-prometheus",
+		"team":          "platform",
+		"environment":   "production",
+		"custom.io/key": "custom-value",
+	}
+
+	actual, err := PodMonitor(params)
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+
+	expectedLabels := map[string]string{
+		"app.kubernetes.io/component":  "opentelemetry-collector",
+		"app.kubernetes.io/instance":   "default.test",
+		"app.kubernetes.io/managed-by": "opentelemetry-operator",
+		"app.kubernetes.io/part-of":    "opentelemetry",
+		"app.kubernetes.io/name":       "test-collector",
+		"app.kubernetes.io/version":    "latest",
+		"prometheus":                   "kube-prometheus",
+		"team":                         "platform",
+		"environment":                  "production",
+		"custom.io/key":                "custom-value",
+	}
+	assert.Equal(t, expectedLabels, actual.Labels)
+}
+
 func TestDesiredPodMonitorsPrometheusNotAvailable(t *testing.T) {
 	params, err := newParams("", "testdata/prometheus-exporter.yaml", &config.Config{
 		CollectorImage:              defaultCollectorImage,
