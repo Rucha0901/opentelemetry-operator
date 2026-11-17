@@ -271,6 +271,7 @@ func TestHeadlessService(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, actual.GetAnnotations()["service.beta.openshift.io/serving-cert-secret-name"], "test-collector-headless-tls")
 		assert.Equal(t, actual.Spec.ClusterIP, "None")
+		assert.Nil(t, actual.Spec.InternalTrafficPolicy)
 	})
 }
 

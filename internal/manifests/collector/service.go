@@ -58,6 +58,7 @@ func HeadlessService(params manifests.Params) (*corev1.Service, error) {
 	h.Annotations = annotations
 
 	h.Spec.ClusterIP = "None"
+	h.Spec.InternalTrafficPolicy = nil
 	return h, nil
 }
 
